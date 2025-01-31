@@ -28,6 +28,9 @@ let rcRemove = document.querySelector('.rc-remove');
 
 const cartEmptyDiv = document.querySelector('.cart-empty-div');
 
+cartPage.appendChild(cartEmptyDiv);
+
+
 // INITIALLY DISPLAYING ALL CART ITEMS
 const fetchCartData = async () => {
    try {
@@ -39,15 +42,22 @@ const fetchCartData = async () => {
      const data = await response.json();
      console.log("Cart Data:", data);
 
-     data.forEach(item => {
-      createCartItem(item.id, item.name, item.price, item.url);
-     })
+     const cartItems = cartPage.querySelectorAll('.cart-item');
+     cartItems.forEach(item => item.remove());
 
-     if (data.length === 0) {
-         cartEmptyDiv.classList.add('visible');
-     } else {
-         cartEmptyDiv.classList.remove('visible');
-     }
+      if (data && data.length > 0) {
+         data.forEach(item => {
+            createCartItem(item.id, item.name, item.price, item.url);
+         })
+         if (cartPage.contains(cartEmptyDiv)) {
+            cartPage.removeChild(cartEmptyDiv);
+         }
+
+      } else if (data.length === 0) {
+         if (!cartPage.contains(cartEmptyDiv)) {
+            cartPage.appendChild(cartEmptyDiv);
+         }
+      }
    } catch (error) {
      console.error("Error:", error.message);
    }
@@ -74,6 +84,7 @@ const displayRecentlyAddedProduct = async () => {
 
    createCartItem(data.id, data.name, data.price, data.url);
 
+   fetchCartData();
 
    } catch (error) {
      console.error("Error:", error.message);
@@ -117,42 +128,37 @@ const createCartItem = (id, name, price, url) => {
    clonedCartItem.classList.add('flex');
    cartPage.appendChild(clonedCartItem);
 
-   clonedCartItem.querySelector('.cart-remove').addEventListener('click', async () => {
+   const removeButton = clonedCartItem.querySelector('.cart-remove');
+
+   removeButton.addEventListener('click', () => {
       rcDiv.classList.add('visible');
-      
-      // rcCancel.addEventListener('click', () => {
-      //    console.log('cancel clicked');
-      //    rcDiv.classList.remove('visible');
-      // }, { once: true })
-      
-      
-
-      let newRcRemove = rcRemove.cloneNode(true);
-      rcRemove.replaceWith(newRcRemove);
-      rcRemove = newRcRemove;
-
-      rcRemove.addEventListener('click', async () => {
-         console.log('remove clicked');
-         rcDiv.classList.remove('visible');
-
-         try {
-            const response = await fetch(`http://localhost:5000/api/userCart/${id}`, {
-               method: 'DELETE',
-            })
-   
-            if (!response.ok) {
-               throw new Error('Failed to delete item');
-            }
-
-            
-            fetchCartData();
-            clonedCartItem.remove();
-            console.log(`Item with ID ${id} has been deleted from the cart.`);
-         } catch(err) {
-            console.error('Error:', err.message);
-         }
-      })
+      console.log('clicked...');
    })
+
+   console.log('Here is the id:', id);
+
+   rcRemove.replaceWith(rcRemove.cloneNode(true));
+   rcRemove = document.querySelector('.rc-remove');
+
+   rcRemove.addEventListener('click', async () => {
+      console.log("Delete clicked for ID:", id);
+      try {
+         const response = await fetch(`http://localhost:5000/api/userCart/${id}`, {
+            method: 'DELETE',
+         });
+
+         if (!response.ok) {
+            throw new Error('Failed to delete item');
+         }
+
+         fetchCartData();
+         clonedCartItem.remove();
+         rcDiv.classList.remove('visible');
+         console.log(`Item with ID ${id} has been deleted from the cart.`);
+      } catch(err) {
+         console.error('Error:', err.message);
+      }
+   });
 }
 
 // DYNAMICALLY GENERATING PRODUCT PAGE
@@ -229,37 +235,6 @@ const displayProductData = (name, url, price, id) => {
       }
    });
 }
-
-
-
- 
-
-// const displayNewCreations = async () => {
-//    try {
-//      const response = await fetch("http://localhost:5000/api/productData/GetAllProducts");
-//      if (!response.ok) {
-//        throw new Error("Failed to fetch cart data");
-//      }
- 
-//      const data = await response.json();
-//      console.log("Cart Data:", data);
-
-//      data.forEach(item => {
-//       createCartItem(item.id, item.name, item.price, item.url);
-//      })
-
-//      if (data.length === 0) {
-//          cartEmptyDiv.classList.add('visible');
-//      } else {
-//          cartEmptyDiv.classList.remove('visible');
-//      }
-//    } catch (error) {
-//      console.error("Error:", error.message);
-//    }
-// };
-// window.onload = fetchCartData;
-
- 
 
 
 

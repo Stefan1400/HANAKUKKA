@@ -13,7 +13,6 @@ const newCreationsPage = document.querySelector('#new-creations-page');
 
 const logo = document.querySelector('#logo');
 
-const products = document.querySelectorAll('.products');
 const productDisplayPage = document.querySelector('#productPage');
 const productImage = productDisplayPage.querySelector('img');
 const productName = productDisplayPage.querySelector('h3');
@@ -64,7 +63,44 @@ const fetchCartData = async () => {
 };
 window.onload = fetchCartData;
 
+const displayAllProducts = async () => {
+   
+   try {
+     const response = await fetch("http://localhost:5000/api/productData");
+     if (!response.ok) {
+       throw new Error("Failed to fetch cart data");
+     }
+ 
+     const data = await response.json();
+
+     data.forEach(item => {
+         const productImage = document.createElement('img');
+         productImage.classList.add('products');
+         productImage.src = item.url;
+         productImage.dataset.price = item.price;
+         productImage.id = item.name;
+
+         const ncImageFlex = document.querySelector('#nc-img-flex');
+
+         ncImageFlex.appendChild(productImage);
+
+         productImage.addEventListener('click', () => {
+            productDisplayPage.classList.add('visible');
+            const productName = productImage.id;
+            const productUrl = productImage.src;
+            const productPrice = productImage.dataset.price;
+            displayProductData(productName, productUrl, productPrice);
+         })
+      })
+      
+   } catch (error) {
+     console.error("Error:", error.message);
+   }
+};
+window.onload = displayAllProducts;
+
 // DISPLAY RECENTLY ADDED TO CART PRODUCT
+
 const displayRecentlyAddedProduct = async () => {
    try {
      const response = await fetch("http://localhost:5000/api/userCart/GetAddedItem");
@@ -184,7 +220,7 @@ const displayProductData = (name, url, price, id) => {
             addToCart.disabled = false;
          }
 
-         console.log('Exist check successful:', data);
+         // console.log('Exist check successful:', data);
 
       } catch (err) {
          console.error('Error with checking existence:', err);
@@ -192,7 +228,6 @@ const displayProductData = (name, url, price, id) => {
    }
 
    checkIfItemInCart(name);
-
    
    productName.textContent = name;
    productImage.src = url;
@@ -255,18 +290,6 @@ goBack.forEach(back => {
       pageToClose.classList.remove('visible');
    })
 })
-
-products.forEach(prod => {
-   prod.addEventListener('click', () => {
-      // console.log('This is a security check:', prod.id);
-      
-      productDisplayPage.classList.add('visible');
-      const productName = prod.id;
-      const productUrl = prod.src;
-      const productPrice = prod.dataset.price;
-      displayProductData(productName, productUrl, productPrice);
-   });
-});
 
 searchIcon.addEventListener('click', () => {
    searchPage.classList.toggle('visible');

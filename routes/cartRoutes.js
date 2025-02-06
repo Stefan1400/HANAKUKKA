@@ -116,4 +116,24 @@ router.post('/userCart', async (req, res) => {
    }
 });
 
+// SEARCH 
+router.get('/search', async (req, res) => {
+    const searchTerm = req.query.query;
+
+    const result = await pool.query(
+        `SELECT * FROM productData 
+         WHERE name ILIKE $1 
+         ORDER BY 
+            CASE 
+                WHEN name ILIKE $2 THEN 1  
+                ELSE 2                  
+            END, 
+            name ASC`,
+        [`%${searchTerm}%`, `${searchTerm}%`]
+    );
+    
+
+    res.json(result.rows);
+})
+
 module.exports = router;

@@ -30,6 +30,14 @@ const cartEmptyDiv = document.querySelector('.cart-empty-div');
 cartPage.appendChild(cartEmptyDiv);
 
 
+
+
+
+
+
+
+
+
 // INITIALLY DISPLAYING ALL CART ITEMS
 const fetchCartData = async () => {
    try {
@@ -63,6 +71,7 @@ const fetchCartData = async () => {
 };
 window.onload = fetchCartData;
 
+// DYNAMICALLY DISPLAY ALL NEW CREATIONS PRODUCTS
 const displayAllProducts = async () => {
    
    try {
@@ -270,6 +279,80 @@ const displayProductData = (name, url, price, id) => {
       }
    });
 }
+
+
+
+
+
+
+
+
+
+
+// SEARCH FUNCTIONALITY
+
+const displaySearchResults = (products) => {
+   const resultsContainer = document.getElementById('search-results-div');
+   resultsContainer.innerHTML = '';
+
+   products.forEach(prod => {
+      const productElement = document.createElement('div');
+      productElement.classList.add('product');
+      productElement.innerHTML = `
+         <h3>${prod.name}</h3>
+         <p>${prod.price}</p>
+         <img src="${prod.url}" alt="{$product.name}" /> 
+      `;
+
+      resultsContainer.appendChild(productElement);
+   })
+}
+
+const searchInput = document.getElementById('search-input');
+
+function debounce(func, delay) {
+   let timer;
+   return function(...args) {
+       clearTimeout(timer);
+       timer = setTimeout(() => func(...args), delay);
+   };
+}
+
+
+if (searchInput) {
+    searchInput.addEventListener('input', debounce(async (event) => {
+        const searchTerm = event.target.value.trim();
+
+        if (searchTerm === '') {
+            displaySearchResults([]);
+            return;
+        }
+
+        try {
+            const response = await fetch(`api/search?query=${searchTerm}`);
+            if (!response.ok) throw new Error("Failed to fetch search results");
+
+            const products = await response.json();
+
+            console.log(products);
+
+            displaySearchResults(products);
+
+        } catch (error) {
+            console.error("Search error:", error.message);
+        }
+    }, 300));
+} else {
+    console.error('search-input not found in the DOM');
+}
+
+
+
+
+
+
+
+
 
 
 
